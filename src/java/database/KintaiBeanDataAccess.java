@@ -77,10 +77,11 @@ public class KintaiBeanDataAccess {
         }
     }
     
-    public void getWorkPatternData(Connection connection, int workPtn_cd, Time start, Time end) throws SQLException {
+    public Time[] getWorkPatternData(Connection connection, int workPtn_cd, String start, String end) throws SQLException {
         
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Time[] time = new Time[2];
         
         try {
             
@@ -92,8 +93,8 @@ public class KintaiBeanDataAccess {
             // パスワード一致していたらページ遷移
             if( rs.next() ) {
                 
-                start = rs.getTime("start_time");
-                end = rs.getTime("end_time");
+                time[0] = rs.getTime("start_time");
+                time[1] = rs.getTime("end_time");
             }
         
         } catch (SQLException ex) {
@@ -120,6 +121,8 @@ public class KintaiBeanDataAccess {
                 ex.printStackTrace();
             }
         }
+        
+        return time;
     }
     
     public double getYukyuMonthData(Connection connection, int ym, UserData userData, KbnData kbnData) throws SQLException {
@@ -215,6 +218,67 @@ public class KintaiBeanDataAccess {
                 return rs.getDouble("result");
             } else {
                 return 0.0;
+            }
+        
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "SQL例外です", ex);
+            ex.printStackTrace();
+            throw new SQLException();
+        } finally {
+            
+            // クローズ
+            try {
+                if (rs != null)
+                    rs.close();
+                rs = null;
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "ResultSetクローズ失敗", ex);
+                ex.printStackTrace();
+            }
+            
+            try {
+                if (stmt != null)
+                    stmt.close();
+                stmt = null;
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "Statementクローズ失敗", ex);
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    public void createkintaiMonthData(Connection connection, UserData userData, ArrayList<KintaiData> kintaiDataList) throws SQLException {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            // yukyuテーブルから残日数を取得
+            stmt = connection.prepareStatement("SELECT * FROM attendance WHERE user_id = ? AND ym = ?");
+            stmt.setString(1, userData.getId());
+            stmt.setInt(2, kintaiDataList.get(0).getYm());
+            rs = stmt.executeQuery();
+            rs.next();
+            
+            if (!rs.next()) {
+                for (KintaiData kintaiData: kintaiDataList) {
+                    stmt = connection.prepareStatement("INSERT INTO attendance VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                    stmt.setInt(1, kintaiData.getYm());
+                    stmt.setString(2, userData.getId());
+                    stmt.setInt(3, kintaiData.getDay());
+                    stmt.setTime(4, kintaiData.getStart());
+                    stmt.setTime(5, kintaiData.getEnd());
+                    stmt.setTime(6, kintaiData.getRest());
+                    stmt.setTime(7, kintaiData.getTotal());
+                    stmt.setTime(8, kintaiData.getReal());
+                    stmt.setTime(9, kintaiData.getOver());
+                    stmt.setTime(10, kintaiData.getLate());
+                    stmt.setTime(11, kintaiData.getLeave());
+                    stmt.setString(12, kintaiData.getRemarks());
+                    stmt.setInt(13, kintaiData.getKbnCd());
+                    stmt.setInt(14, kintaiData.getWorkPtn_cd());
+
+                    stmt.executeUpdate();
+                }
             }
         
         } catch (SQLException ex) {

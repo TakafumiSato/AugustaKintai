@@ -109,7 +109,7 @@ public class EditBean {
     private void initKintaiData() throws SQLException, NamingException {
         
         // 勤怠データを初期化
-        kintaiData = new KintaiData(kintaiKey.getYm(),kintaiKey.getDay());
+        kintaiData = new KintaiData(kintaiKey.getYm(), kintaiKey.getDay(), 0, kbnData.getKbnList().get(0));
         
         Connection connection = null;
         
@@ -216,12 +216,18 @@ public class EditBean {
         
         String kbnName = kbnData.getKbnList().get(kintaiData.getKbnCd());
         
-        // すべての入力値が0になる場合（特別休暇、公休、代休、欠勤）
+        // すべての入力値が0になる場合（夏季休暇、冬季休暇、代休、欠勤）
         if (kbnName.equals("夏季休暇") ||
                 kbnName.equals("冬季休暇") ||
                 kbnName.equals("代休") ||
-                kbnName.equals("欠勤"))
-            return;
+                kbnName.equals("欠勤") ||
+                kbnName.equals("休日"))
+            kintaiData.setData();
+        
+        // 区分が休日の場合nullを設定
+//        if (kbnName.equals("休日")) {
+//            kintaiData.setData();
+//        }
         
         // nullチェック
         if (kintaiData.getStart() != null &&
@@ -499,7 +505,8 @@ public class EditBean {
                 kbnName.equals("冬季休暇") ||
                 kbnName.equals("有休") ||
                 kbnName.equals("代休") ||
-                kbnName.equals("欠勤")) {
+                kbnName.equals("欠勤") ||
+                kbnName.equals("休日")) {
             disabled = true;
         } else {
             disabled = false;

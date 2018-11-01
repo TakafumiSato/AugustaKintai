@@ -30,10 +30,10 @@ public class KintaiData {
     private Time leave = null;
     private String remarks = null;
     
-    private boolean dbFlag = false;
+    //private boolean dbFlag = false;
 
     
-    public KintaiData(int ym, int day) {
+    public KintaiData(int ym, int day, int kbn_cd, String kbnName) {
 
         this.ym = ym;
         this.day = day;
@@ -45,14 +45,12 @@ public class KintaiData {
         this.rest = null;
         this.over = null;
         this.real = null;
-        this.kbn_cd = 0;
-        this.kbnName = "";
+        this.kbn_cd = kbn_cd;
+        this.kbnName = kbnName;
         this.workPtn_cd = 1;
         this.late = null;
         this.leave = null;
         this.remarks = null;
-        
-        this.dbFlag = false;
     }
     
     public void setData(Time start, Time end, Time rest, Time total, Time over, Time real, int kbn_cd, String kbnName, int workPtn_cd, Time late, Time leave, String remarks) {
@@ -68,8 +66,17 @@ public class KintaiData {
         this.late = late;
         this.leave = leave;
         this.remarks = remarks;
-        
-        this.dbFlag = true;
+    }
+    
+    public void setData() {
+        this.start = null;
+        this.end = null;
+        this.total = null;
+        this.rest = null;
+        this.over = null;
+        this.real = null;
+        this.late = null;
+        this.leave = null;
     }
 
     
@@ -199,13 +206,5 @@ public class KintaiData {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
-    }
-
-    public boolean isDbFlag() {
-        return dbFlag;
-    }
-
-    public void setDbFlag(boolean dbFlag) {
-        this.dbFlag = dbFlag;
     }
 }

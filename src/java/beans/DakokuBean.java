@@ -123,7 +123,10 @@ public class DakokuBean {
         Calendar c = new GregorianCalendar();
         
         // 現在の年月日をkintaiDataにセット
-        kintaiData = new KintaiData(Utility.unionYearMonth(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1), c.get(Calendar.DAY_OF_MONTH) );
+        if (c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+            kintaiData = new KintaiData(Utility.unionYearMonth(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"), "休日");
+        else
+            kintaiData = new KintaiData(Utility.unionYearMonth(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1), c.get(Calendar.DAY_OF_MONTH), 0, "");
         
         try {
             // データベース接続

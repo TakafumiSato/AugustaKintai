@@ -134,13 +134,19 @@ public class KintaiBean implements Serializable {
         // kintaiDataListの日付部分を設定
         for (int i = 1; i <= lastDay; i++) {
             
-            // Stringで日付と曜日を設定
-            kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH)));
+            // 年月日を設定
+            if (c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"),"休日"));
+            }
+            else {
+                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("出勤"),"出勤"));
+            }
             // 日付を1日ずらす
             c.add(Calendar.DAY_OF_MONTH, +1);
         }
         
         try {
+            createKintaiData();
             // kintaiDataListにデータベースの勤怠データを設定
             readKintaiData();
         } catch (NamingException ex) {
@@ -156,28 +162,126 @@ public class KintaiBean implements Serializable {
     
     /*
     setKintaiData
-    データベースに存在する勤怠データを設定
+    データベースに勤怠データを作成
     */
-    private void readKintaiData() throws SQLException, NamingException {
+    private void createKintaiData() throws SQLException, NamingException {
         
         Connection connection = null;
         PreparedStatement stmt = null;
-        ResultSet rsAttendance = null;
-        ResultSet rsKbn = null;
+        ResultSet rs = null;
         
         try {
             // データベース接続
             connection = DBController.open();
             
             // 勤務パターンを読込
-            Time start = null;
-            Time end = null;
-            kintaibeanDA.getWorkPatternData(connection, userData.getWorkptn_cd(), start, end);
+            String start = null;
+            String end = null;
+            Time[] default_time = kintaibeanDA.getWorkPatternData(connection, userData.getWorkptn_cd(), start, end);
             for (KintaiData kintaiData :kintaiDataList) {
                 
-                kintaiData.setStart_default(start);
-                kintaiData.setEnd_default(end);
+                kintaiData.setStart_default(default_time[0]);
+                kintaiData.setEnd_default(default_time[1]);
+                kintaiData.setStart(default_time[0]);
+                kintaiData.setEnd(default_time[1]);
+                kintaiData.setRest(Time.valueOf("01:00:00"));
+                
+                kintaiDataCalculation(kintaiData);
             }
+        
+            // 勤怠実績を読込
+            kintaibeanDA.createkintaiMonthData(connection, userData, kintaiDataList);
+            
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new SQLException();
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+                connection = null;
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "Connectionクローズ失敗", ex);
+                ex.printStackTrace();
+            }
+            
+            try {
+                if (stmt != null)
+                    stmt.close();
+                stmt = null;
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "Connectionクローズ失敗", ex);
+                ex.printStackTrace();
+            }
+            
+            try {
+                if (rs != null)
+                    rs.close();
+                rs = null;
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "Connectionクローズ失敗", ex);
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    /*
+    kintaiDataCalculation
+    総労働時間、残業時間、実労働時間、遅刻、早退を算出
+    */
+    private void kintaiDataCalculation(KintaiData kintaiData) {
+        
+        // 区分が休日の場合nullを設定
+        if (kintaiData.getKbnName().equals("休日")) {
+            kintaiData.setData();
+        }
+        
+        // nullチェック
+        if (kintaiData.getStart() != null &&
+                kintaiData.getEnd() != null &&
+                kintaiData.getRest() != null) {
+            
+            // 総労働時間算出
+            kintaiData.setTotal(MathKintai.resultTotal(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getRest()));
+            // 残業時間算出
+            kintaiData.setOver(MathKintai.resultOver(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getRest()));
+            // 実労働時間算出
+            kintaiData.setReal(MathKintai.resultReal(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getStart_default(), kintaiData.getEnd_default(), kintaiData.getRest(), kbnData.getKbnList().get(kintaiData.getKbnCd())));
+        }
+        
+        // nullチェック
+        if (kintaiData.getStart() != null &&
+                kintaiData.getStart_default()!= null)
+        {
+            if (kbnData.getKbnList().get(kintaiData.getKbnCd()).equals("午前有休"))
+                kintaiData.setStart_default(Time.valueOf(kintaiData.getStart_default().toLocalTime().plusHours(4).toString()+":00"));
+            // 遅刻算出
+            kintaiData.setLate(MathKintai.resultLate(kintaiData.getStart(), kintaiData.getStart_default()));
+        }
+        
+        // nullチェック
+        if (kintaiData.getEnd() != null &&
+                kintaiData.getEnd_default()!= null)
+        {
+            if (kbnData.getKbnList().get(kintaiData.getKbnCd()).equals("午後有休"))
+                kintaiData.setEnd_default(Time.valueOf(kintaiData.getEnd_default().toLocalTime().minusHours(4).toString()+":00"));
+            // 早退算出
+            kintaiData.setLeave(MathKintai.resultLeave(kintaiData.getEnd(), kintaiData.getEnd_default()));
+        }
+    }
+    
+    /*
+    setKintaiData
+    データベースに存在する勤怠データを設定
+    */
+    private void readKintaiData() throws SQLException, NamingException {
+        
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        
+        try {
+            // データベース接続
+            connection = DBController.open();
         
             // 勤怠実績を読込
             kintaibeanDA.getAttendanceData(connection, Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), this.userData, kintaiDataList);
@@ -199,6 +303,15 @@ public class KintaiBean implements Serializable {
                 if (connection != null)
                     connection.close();
                 connection = null;
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "Connectionクローズ失敗", ex);
+                ex.printStackTrace();
+            }
+            
+            try {
+                if (stmt != null)
+                    stmt.close();
+                stmt = null;
             } catch (SQLException ex) {
                 LOG.log(Level.SEVERE, "Connectionクローズ失敗", ex);
                 ex.printStackTrace();
