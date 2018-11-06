@@ -7,7 +7,6 @@ package util;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  *
@@ -25,29 +24,28 @@ public class Utility {
     public static String conversionDateToString(java.util.Date date) {
         // DateからStringに変換
         String text = null;
-        Calendar c = new GregorianCalendar();
-        c.setTime(date);
+        MyCalendar myCalendar = new MyCalendar();
+        myCalendar.get().setTime(date);
         
-        text = String.valueOf(c.get(Calendar.DAY_OF_MONTH));
-        
-        c = null;
+        text = String.valueOf(myCalendar.get().get(Calendar.DAY_OF_MONTH));
         
         return text;
     }
     
     public static String conversionDayOfWeek(int ym, int day) {
         
+        MyCalendar myCalendar = new MyCalendar();
+        
         String dayOfWeek = null;
-        Calendar c = new GregorianCalendar();
         if (String.valueOf(ym).length() > 5) {
             
-            c.set(ym/100,(ym%100)-1,day);
+            myCalendar.get().set(ym/100,(ym%100)-1,day);
         } else {
             
-            c.set(ym/10,(ym%10)-1,day);
+            myCalendar.get().set(ym/10,(ym%10)-1,day);
         }
         
-        int dow = c.get(Calendar.DAY_OF_WEEK);
+        int dow = myCalendar.get().get(Calendar.DAY_OF_WEEK);
         
         switch(dow) {
             case Calendar.MONDAY:
@@ -72,8 +70,6 @@ public class Utility {
                 dayOfWeek = "日";
                 break;
         }
-        
-        c = null;
         
         return dayOfWeek;
     }

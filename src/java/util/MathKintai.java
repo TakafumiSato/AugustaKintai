@@ -58,7 +58,6 @@ public class MathKintai {
     
     public static Time resultReal(Time start, Time end, Time start_default, Time end_default, Time rest, String kbnName) {
         
-        Time s = null;
         Time real = null;
         
         // 有休
@@ -66,19 +65,51 @@ public class MathKintai {
             real = Time.valueOf(mathTotal(start, end, rest).toLocalTime().minusHours(8).toString()+":00");
         } else if (kbnName.equals("午前有休")) {
             
-            if (start.toLocalTime().compareTo(start_default.toLocalTime().plusHours(4)) < 0) {
-                // 早い
-                real = mathTotal(Time.valueOf(start_default.toLocalTime().plusHours(4)+":00"), end, rest);
+            LocalTime sdLocal = start_default.toLocalTime().plusHours(4);
+            
+            if (end.toLocalTime().compareTo(sdLocal) > 0) {
+                if (start.toLocalTime().compareTo(sdLocal) < 0) {
+                    
+                    LocalTime addTime = LocalTime.of(0, 0);
+                    
+                    if (start.toLocalTime().compareTo(start_default.toLocalTime()) < 0) {
+                        addTime = start_default.toLocalTime().minusHours(start.toLocalTime().getHour());
+                        addTime = addTime.minusMinutes(start.toLocalTime().getMinute());
+                    }
+                    
+                    // 早い
+                    real = mathTotal(Time.valueOf(sdLocal.toString()+":00"), end, rest);
+                    real = Time.valueOf(real.toLocalTime().plusHours(addTime.getHour()));
+                    real = Time.valueOf(real.toLocalTime().plusMinutes(addTime.getMinute()));
+                } else {
+                    real = mathTotal(start, end, rest);
+                }
             } else {
-                real = mathTotal(start, end, rest);
+                real = Time.valueOf("00:00:00");
             }
         } else if (kbnName.equals("午後有休")) {
             
-            if (end.toLocalTime().compareTo(end_default.toLocalTime().minusHours(4)) > 0) {
-                // 遅く
-                real = mathTotal(start, Time.valueOf(end_default.toLocalTime().minusHours(4)+":00"), rest);
+            LocalTime edLocal = end_default.toLocalTime().minusHours(4);
+            
+            if (start.toLocalTime().compareTo(edLocal) < 0) {
+                if (end.toLocalTime().compareTo(edLocal) > 0) {
+                    
+                    LocalTime addTime = LocalTime.of(0, 0);
+                    
+                    if (end.toLocalTime().compareTo(end_default.toLocalTime()) > 0) {
+                        addTime = end.toLocalTime().minusHours(end_default.toLocalTime().getHour());
+                        addTime = addTime.minusMinutes(end_default.toLocalTime().getMinute());
+                    }
+                    
+                    // 遅く
+                    real = mathTotal(start, Time.valueOf(edLocal.toString()+":00"), rest);
+                    real = Time.valueOf(real.toLocalTime().plusHours(addTime.getHour()));
+                    real = Time.valueOf(real.toLocalTime().plusMinutes(addTime.getMinute()));
+                } else {
+                    real = mathTotal(start, end, rest);
+                }
             } else {
-                real = mathTotal(start, end, rest);
+                real = Time.valueOf("00:00:00");
             }
         } else {
             real = mathTotal(start, end, rest);

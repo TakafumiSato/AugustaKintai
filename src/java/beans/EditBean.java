@@ -356,12 +356,18 @@ public class EditBean {
         kintaiData.setRemarks(remarks);
     }
     
-    public int getViewYM() {
-        return kintaiData.getYm();
+    public String getViewYM() {
+        
+        String ym = String.valueOf(kintaiData.getYm());
+        String y = ym.substring(0, 4);
+        String m = ym.substring(4, 6);
+        return y + "年" + m + "月";
     }
     
-    public int getViewDay() {
-        return kintaiData.getDay();
+    public String getViewDay() {
+        
+        String day = String.valueOf(kintaiData.getDay());
+        return day + "日";
     }
     
     public int getViewKbn() {

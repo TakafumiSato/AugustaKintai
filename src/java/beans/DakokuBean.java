@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalTime;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -26,6 +25,7 @@ import javax.faces.bean.ViewScoped;
 import javax.naming.NamingException;
 import util.Log;
 import util.MathKintai;
+import util.MyCalendar;
 import util.Utility;
 
 /**
@@ -46,6 +46,8 @@ public class DakokuBean {
     private KintaiData kintaiData = null;
     
     private DakokuBeanDataAccess dakokuBeanDA = null;
+    
+    private MyCalendar myCalendar = null;
     
     // ログ生成
     private static final Logger LOG = Log.getLog();
@@ -82,8 +84,8 @@ public class DakokuBean {
         dakokuBeanDA = new DakokuBeanDataAccess();
         
         // 現在の時刻を保存
-        Calendar c = new GregorianCalendar();
-        entryTime = Time.valueOf(String.valueOf(c.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(c.get(Calendar.MINUTE)) + ":00");
+        myCalendar = new MyCalendar();
+        entryTime = Time.valueOf(String.valueOf(myCalendar.get().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(myCalendar.get().get(Calendar.MINUTE)) + ":00");
         
         // 出退勤ボタンのフラグをfalseに
         entry = false;
@@ -120,13 +122,11 @@ public class DakokuBean {
         
         Connection connection = null;
         
-        Calendar c = new GregorianCalendar();
-        
         // 現在の年月日をkintaiDataにセット
-        if (c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-            kintaiData = new KintaiData(Utility.unionYearMonth(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"), "休日");
+        if (myCalendar.get().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || myCalendar.get().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+            kintaiData = new KintaiData(Utility.unionYearMonth(myCalendar.get().get(Calendar.YEAR), myCalendar.get().get(Calendar.MONTH)+1), myCalendar.get().get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"), "休日");
         else
-            kintaiData = new KintaiData(Utility.unionYearMonth(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1), c.get(Calendar.DAY_OF_MONTH), 0, "");
+            kintaiData = new KintaiData(Utility.unionYearMonth(myCalendar.get().get(Calendar.YEAR), myCalendar.get().get(Calendar.MONTH)+1), myCalendar.get().get(Calendar.DAY_OF_MONTH), 0, "");
         
         try {
             // データベース接続
@@ -158,8 +158,6 @@ public class DakokuBean {
     private void readKintaiData() throws SQLException, NamingException {
         
         Connection connection = null;
-        
-        Calendar c = new GregorianCalendar();
         
         try {
             // データベース接続

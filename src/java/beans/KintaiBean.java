@@ -22,7 +22,6 @@ import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -35,7 +34,7 @@ import javax.faces.model.SelectItem;
 import javax.naming.NamingException;
 import util.Log;
 import util.MathKintai;
-import session.SessionTimeOutFilter;
+import util.MyCalendar;
 import util.Utility;
 
 /**
@@ -69,6 +68,8 @@ public class KintaiBean implements Serializable {
     // ログ生成
     private static final Logger LOG = Log.getLog();
     
+    private MyCalendar myCalendar = null;
+    
     // 勤怠データリスト
     private ArrayList<KintaiData> kintaiDataList = null;
     // 選択月度リスト
@@ -90,6 +91,7 @@ public class KintaiBean implements Serializable {
     public void init() throws ViewExpiredException {
         
         kintaibeanDA = new KintaiBeanDataAccess();
+        myCalendar = new MyCalendar();
         
         // 打刻画面メッセージを初期化
         dakokuMessage.setResultMessage("");
@@ -117,17 +119,16 @@ public class KintaiBean implements Serializable {
         kintaiDataList = new ArrayList<KintaiData>();
         
         // カレンダー生成
-        Calendar c = new GregorianCalendar();
         // 1日を設定
         if (kintaiYearMonth.getYear() == 0)
-            c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), 1);
+            myCalendar.get().set(myCalendar.get().get(Calendar.YEAR), myCalendar.get().get(Calendar.MONTH), 1);
         else
-            c.set(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()-1, 1);
+            myCalendar.get().set(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()-1, 1);
         
-        kintaiYearMonth.setYear(c.get(Calendar.YEAR));
-        kintaiYearMonth.setMonth(c.get(Calendar.MONTH)+1);
+        kintaiYearMonth.setYear(myCalendar.get().get(Calendar.YEAR));
+        kintaiYearMonth.setMonth(myCalendar.get().get(Calendar.MONTH)+1);
         // 月度の最終日を取得
-        int lastDay = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int lastDay = myCalendar.get().getActualMaximum(Calendar.DAY_OF_MONTH);
         // 今月度を設定
         yearMonthList = createYearMonthList(kintaiYearMonth);
         
@@ -139,10 +140,10 @@ public class KintaiBean implements Serializable {
 //                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"),"休日"));
 //            }
 //            else {
-                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf(""),""));
+                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), myCalendar.get().get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf(""),""));
 //            }
             // 日付を1日ずらす
-            c.add(Calendar.DAY_OF_MONTH, +1);
+            myCalendar.get().add(Calendar.DAY_OF_MONTH, +1);
         }
         
         try {
@@ -328,16 +329,16 @@ public class KintaiBean implements Serializable {
         
         int range = 12;
         ArrayList<SelectItem> list = new ArrayList<SelectItem>();
-        Calendar c = new GregorianCalendar();
-        c.set(Calendar.YEAR, kintaiYearMonth.getYear());
-        c.set(Calendar.MONTH, kintaiYearMonth.getMonth()-1);
+        MyCalendar myCalendar = new MyCalendar();
+        myCalendar.get().set(Calendar.YEAR, kintaiYearMonth.getYear());
+        myCalendar.get().set(Calendar.MONTH, kintaiYearMonth.getMonth()-1);
         // 現在からrange/2カ月前を頭に設定
-        c.add(Calendar.MONTH, -range/2);
+        myCalendar.get().add(Calendar.MONTH, -range/2);
 
         // range分リストに追加
         for (int i = 0; i < range; i++) {
-            list.add(new SelectItem(Utility.unionYearMonth(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1), c.get(Calendar.YEAR)+"年"+(c.get(Calendar.MONTH)+1)+"月"));
-            c.add(Calendar.MONTH, +1);
+            list.add(new SelectItem(Utility.unionYearMonth(myCalendar.get().get(Calendar.YEAR),myCalendar.get().get(Calendar.MONTH)+1), myCalendar.get().get(Calendar.YEAR)+"年"+(myCalendar.get().get(Calendar.MONTH)+1)+"月"));
+            myCalendar.get().add(Calendar.MONTH, +1);
         }
         
         return list;
