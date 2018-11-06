@@ -36,6 +36,7 @@ public class DBController {
     public static Connection open() throws SQLException, NamingException {
         
         try {
+            LOG.log(Level.INFO, "DB接続");
                 try{
                     Class.forName("com.mysql.jdbc.Driver");
                 } catch (ClassNotFoundException ex) {

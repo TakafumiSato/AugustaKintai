@@ -135,18 +135,18 @@ public class KintaiBean implements Serializable {
         for (int i = 1; i <= lastDay; i++) {
             
             // 年月日を設定
-            if (c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"),"休日"));
-            }
-            else {
-                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("出勤"),"出勤"));
-            }
+//            if (c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+//                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf("休日"),"休日"));
+//            }
+//            else {
+                kintaiDataList.add(new KintaiData(Utility.unionYearMonth(kintaiYearMonth.getYear(), kintaiYearMonth.getMonth()), c.get(Calendar.DAY_OF_MONTH), kbnData.getKbnList().indexOf(""),""));
+//            }
             // 日付を1日ずらす
             c.add(Calendar.DAY_OF_MONTH, +1);
         }
         
         try {
-            createKintaiData();
+            //createKintaiData();
             // kintaiDataListにデータベースの勤怠データを設定
             readKintaiData();
         } catch (NamingException ex) {

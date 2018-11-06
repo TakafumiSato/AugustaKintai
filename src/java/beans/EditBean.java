@@ -119,6 +119,8 @@ public class EditBean {
             
             // 勤怠データの初期値をユーザーの勤務パターンに合わせる
             editBeanDA.getWorkPatternData(connection, userData.getWorkptn_cd(), kintaiData);
+            kintaiData.setKbnCd(kbnData.getKbnList().indexOf("出勤"));
+            kintaiData.setKbnName("出勤");
             
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, "SQL例外です", ex);
@@ -237,7 +239,10 @@ public class EditBean {
             // 総労働時間算出
             kintaiData.setTotal(MathKintai.resultTotal(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getRest()));
             // 残業時間算出
-            kintaiData.setOver(MathKintai.resultOver(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getRest()));
+            if (!kbnName.equals("休日出勤"))
+                kintaiData.setOver(MathKintai.resultOver(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getRest()));
+            else
+                kintaiData.setOver(kintaiData.getTotal());
             // 実労働時間算出
             kintaiData.setReal(MathKintai.resultReal(kintaiData.getStart(), kintaiData.getEnd(), kintaiData.getStart_default(), kintaiData.getEnd_default(), kintaiData.getRest(), kbnData.getKbnList().get(kintaiData.getKbnCd())));
         }
@@ -373,7 +378,7 @@ public class EditBean {
     
     public String getViewEnd() {
         
-        if (kintaiData.getStart() != null)
+        if (kintaiData.getEnd() != null)
             return kintaiData.getEnd().toString();
         else
             return kintaiData.getEnd_default().toString();

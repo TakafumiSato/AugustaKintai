@@ -207,6 +207,8 @@ public class DakokuBean {
         
         // 出勤時刻を設定
         kintaiData.setStart(workStart);
+        kintaiData.setKbnCd(kbnData.getKbnList().indexOf("出勤"));
+        kintaiData.setKbnName("出勤");
         
         try {
             // データベース接続
@@ -344,7 +346,7 @@ public class DakokuBean {
         
         // 登録成功
         entrySuccess = true;
-        LocalTime localTime = entryTime.toLocalTime();
+        LocalTime localTime = workEnd.toLocalTime();
         dakokuMessage.setResultMessage(String.valueOf(localTime.getHour()) + ":" + String.valueOf(localTime.getMinute()) + "に退勤いたしました。");
         
         return "dakoku.xhtml?faces-redirect=true";
