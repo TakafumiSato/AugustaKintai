@@ -15,15 +15,24 @@ import javax.faces.bean.SessionScoped;
 @ManagedBean
 @SessionScoped
 public class DakokuMessage {
-    
+    private boolean warning = false;
     private String resultMessage = null;
 
     public String getResultMessage() {
         return resultMessage;
     }
 
-    public void setResultMessage(String resultMessage) {
+    public void setResultMessage(String resultMessage, boolean warning) {
         this.resultMessage = resultMessage;
+        this.warning = warning;
+    }
+
+    public boolean isWarning() {
+        return warning;
+    }
+
+    public void setWarning(boolean warning) {
+        this.warning = warning;
     }
     
 }

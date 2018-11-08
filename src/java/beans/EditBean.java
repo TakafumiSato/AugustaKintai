@@ -395,7 +395,7 @@ public class EditBean {
         if (kintaiData.getRest() != null)
             return kintaiData.getRest().toString();
         else
-            return new Time(Time.valueOf("01:00:00").getTime()).toString();
+            return kintaiData.getRest_default().toString();
     }
     
     public String getViewRemarks() {

@@ -20,6 +20,7 @@ public class KintaiData {
     private Time start_default = null;
     private Time end_default = null;
     private Time rest = null;
+    private Time rest_default = null;
     private Time total = null;
     private Time over = null;
     private Time real = null;
@@ -39,9 +40,10 @@ public class KintaiData {
         this.day = day;
         this.start = null;
         this.end = null;
-        start_default = null;
-        end_default = null;
+        this.start_default = null;
+        this.end_default = null;
         this.total = null;
+        this.rest_default = null;
         this.rest = null;
         this.over = null;
         this.real = null;
@@ -142,6 +144,14 @@ public class KintaiData {
 
     public void setEnd_default(Time end_default) {
         this.end_default = end_default;
+    }
+
+    public Time getRest_default() {
+        return rest_default;
+    }
+
+    public void setRest_default(Time rest_default) {
+        this.rest_default = rest_default;
     }
 
     public Time getTotal() {

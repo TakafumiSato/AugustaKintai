@@ -46,6 +46,7 @@ public class EditBeanDataAccess {
                 
                 kintaiData.setStart_default(rs.getTime("start_time"));
                 kintaiData.setEnd_default(rs.getTime("end_time"));
+                kintaiData.setRest_default(rs.getTime("rest_time"));
             }
         
         } catch (SQLException ex) {

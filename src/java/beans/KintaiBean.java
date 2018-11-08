@@ -94,7 +94,7 @@ public class KintaiBean implements Serializable {
         myCalendar = new MyCalendar();
         
         // 打刻画面メッセージを初期化
-        dakokuMessage.setResultMessage("");
+        dakokuMessage.setResultMessage("", false);
         
         try {
             // rowData初期化

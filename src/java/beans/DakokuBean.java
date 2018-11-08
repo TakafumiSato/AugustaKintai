@@ -196,7 +196,7 @@ public class DakokuBean {
         
         // すでに本日の出勤が打刻されている場合は以下を処理しない
         if (kintaiData.getStart() != null) {
-            dakokuMessage.setResultMessage("本日はすでに出勤されています。");
+            dakokuMessage.setResultMessage("本日はすでに出勤されています。", true);
             return null;
         }
         
@@ -233,7 +233,7 @@ public class DakokuBean {
         // 登録成功
         entrySuccess = true;
         LocalTime localTime = workStart.toLocalTime();
-        dakokuMessage.setResultMessage(String.valueOf(localTime.getHour()) + ":" + String.valueOf(localTime.getMinute()) + "に出勤いたしました。");
+        dakokuMessage.setResultMessage(String.valueOf(localTime.getHour()) + ":" + String.valueOf(localTime.getMinute()) + "に出勤いたしました。", false);
         
         return "dakoku.xhtml?faces-redirect=true";
     }
@@ -296,12 +296,12 @@ public class DakokuBean {
         
         // すでに本日の退勤が打刻されている場合は以下を処理しない
         if (kintaiData.getEnd() != null) {
-            dakokuMessage.setResultMessage("本日はすでに退勤されています。");
+            dakokuMessage.setResultMessage("本日はすでに退勤されています。", true);
             return null;
         }
         // 出勤が押される前に退勤は押せない
         if (kintaiData.getStart() == null) {
-            dakokuMessage.setResultMessage("本日はまだ出勤されていません。");
+            dakokuMessage.setResultMessage("本日はまだ出勤されていません。", true);
             return null;
         }
         
@@ -345,7 +345,7 @@ public class DakokuBean {
         // 登録成功
         entrySuccess = true;
         LocalTime localTime = workEnd.toLocalTime();
-        dakokuMessage.setResultMessage(String.valueOf(localTime.getHour()) + ":" + String.valueOf(localTime.getMinute()) + "に退勤いたしました。");
+        dakokuMessage.setResultMessage(String.valueOf(localTime.getHour()) + ":" + String.valueOf(localTime.getMinute()) + "に退勤いたしました。", false);
         
         return "dakoku.xhtml?faces-redirect=true";
     }
@@ -398,6 +398,11 @@ public class DakokuBean {
         LocalTime localTime = entryTime.toLocalTime();
         
         return localTime.toString();
+    }
+
+    public boolean getViewResultMessageWarning() {
+        
+        return dakokuMessage.isWarning();
     }
 
     public String getViewResultMessage() {
